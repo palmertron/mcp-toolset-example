@@ -52,6 +52,14 @@ async def _run() -> None:
             assert exc.code == TOOLSET_ERROR
             assert exc.data["reason"] == "tool_not_in_toolset"
 
+        unknown = ToolsetRef(name="core-ops", version="9.9.9")
+        try:
+            await client.call_tool("ToolA", {}, toolset=unknown)
+            raise AssertionError("expected unknown pin on call to raise MCPError")
+        except MCPError as exc:
+            assert exc.code == TOOLSET_ERROR
+            assert exc.data["reason"] == "unknown_toolset"
+
         ok = await client.call_tool("ToolA", {}, toolset=pin_110)
         assert ok.is_error is False
         assert isinstance(ok.content[0], TextContent)

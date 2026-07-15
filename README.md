@@ -1,8 +1,8 @@
 # MCP Toolset Versioning — e2e demo
 
-Companion demo for the [Toolset Versioning SEP draft](https://github.com/palmertron/modelcontextprotocol/blob/sep/toolset-versioning/seps/0000-toolset-versioning.md) and the Python SDK prototype on branch [`feature/toolset-versioning`](https://github.com/palmertron/python-sdk/tree/feature/toolset-versioning).
+Companion demo for the [Toolset Versioning SEP draft](https://github.com/palmertron/modelcontextprotocol/blob/sep/toolset-versioning/seps/0000-toolset-versioning.md) and the Python SDK **draft reference** on branch [`feature/toolset-versioning`](https://github.com/palmertron/python-sdk/tree/feature/toolset-versioning).
 
-A Streamable HTTP MCP server publishes three immutable `core-ops` Toolset versions. A CLI agent pins `core-ops@1.1.0` and drives tools through a local OpenAI-compatible LLM (Ollama by default). There is no FastAPI or custom REST tools API — only MCP.
+A Streamable HTTP MCP server publishes three immutable `core-ops` Toolset versions. Clients advertise `io.modelcontextprotocol/toolsets` at initialize, then pass an exact `toolset` pin on `tools/list` / `tools/call`. A CLI agent pins `core-ops@1.1.0` and drives tools through a local OpenAI-compatible LLM (Ollama by default).
 
 ## Layout
 
@@ -44,7 +44,7 @@ Listens at `http://127.0.0.1:8000/mcp`.
 uv run python -m client.verify
 ```
 
-Asserts unpinned vs pinned membership and that `ToolD` under `1.1.0` returns `tool_not_in_toolset`.
+Asserts unpinned vs pinned membership, that `ToolD` under `1.1.0` returns `tool_not_in_toolset`, and that an unknown pin returns `unknown_toolset` on `tools/call`.
 
 **Terminal 2 — agent**
 
@@ -79,9 +79,10 @@ Point `OPENAI_BASE_URL` / `MODEL` at any OpenAI-compatible chat+tools endpoint.
 
 ## SEP framing
 
-This demo shows the extension wire behavior that reviewers care about:
+This demo shows the extension wire behavior that SEP reviewers may be interested in:
 
-1. `toolsets/list` discovery
-2. Exact pin on `tools/list` / `tools/call`
-3. Protocol error for non-members (`reason: tool_not_in_toolset`)
-4. Concurrent immutable versions (`1.0.0` / `1.1.0` / `2.0.0`) on one server
+1. Advertise the extension at initialize, then pin per request
+2. `toolsets/list` discovery
+3. Exact pin on `tools/list` / `tools/call`
+4. Protocol errors for non-members (`tool_not_in_toolset`) and unknown pins (`unknown_toolset`)
+5. Concurrent immutable versions (`1.0.0` / `1.1.0` / `2.0.0`) on one server
