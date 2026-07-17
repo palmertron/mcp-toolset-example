@@ -2,7 +2,7 @@
 
 Companion demo for the [Toolset Versioning SEP draft](https://github.com/palmertron/modelcontextprotocol/blob/sep/toolset-versioning/seps/0000-toolset-versioning.md) and the Python SDK **draft reference** on branch [`feature/toolset-versioning`](https://github.com/palmertron/python-sdk/tree/feature/toolset-versioning).
 
-A Streamable HTTP MCP server publishes three immutable `core-ops` Toolset versions. Clients advertise `io.modelcontextprotocol/toolsets` at initialize, then pass an exact `toolset` pin on `tools/list` / `tools/call`. A CLI agent pins `core-ops@1.1.0` and drives tools through a local OpenAI-compatible LLM (Ollama by default).
+A Streamable HTTP MCP server publishes three immutable `core-ops` Toolset versions. The demo targets MCP protocol revision `2026-07-28`: clients discover server support through `server/discover`, advertise `io.modelcontextprotocol/toolsets` in per-request capabilities, and pass an exact `toolset` pin on `tools/list` / `tools/call`. A CLI agent pins `core-ops@1.1.0` and drives tools through a local OpenAI-compatible LLM (Ollama by default).
 
 ## Layout
 
@@ -81,7 +81,7 @@ Point `OPENAI_BASE_URL` / `MODEL` at any OpenAI-compatible chat+tools endpoint.
 
 This demo shows the extension wire behavior that SEP reviewers may be interested in:
 
-1. Advertise the extension at initialize, then pin per request
+1. Discover server support through `server/discover` and advertise the extension in each extension-dependent request
 2. `toolsets/list` discovery
 3. Exact pin on `tools/list` / `tools/call`
 4. Protocol errors for non-members (`tool_not_in_toolset`) and unknown pins (`unknown_toolset`)

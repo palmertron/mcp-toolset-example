@@ -28,7 +28,8 @@ async def _run() -> None:
     pin_110 = ToolsetRef(name="core-ops", version="1.1.0")
     pin_200 = ToolsetRef(name="core-ops", version="2.0.0")
 
-    async with Client(url, extensions=[advertise(EXTENSION_ID)]) as client:
+    async with Client(url, mode="auto", extensions=[advertise(EXTENSION_ID)]) as client:
+        assert client.protocol_version == "2026-07-28", f"unexpected protocol: {client.protocol_version}"
         published = await client.list_toolsets(name="core-ops")
         assert {(t.name, t.version) for t in published.toolsets} == {
             ("core-ops", "1.0.0"),

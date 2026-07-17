@@ -70,7 +70,9 @@ async def _run() -> None:
     model = model_name()
     llm = AsyncOpenAI(base_url=openai_base_url(), api_key=openai_api_key())
 
-    async with Client(url, extensions=[advertise(EXTENSION_ID)]) as client:
+    async with Client(url, mode="auto", extensions=[advertise(EXTENSION_ID)]) as client:
+        if client.protocol_version != "2026-07-28":
+            raise RuntimeError(f"Toolset demo requires MCP 2026-07-28; server selected {client.protocol_version}")
         listed = await client.list_tools(toolset=pin)
         openai_tools = [_tool_to_openai(t) for t in listed.tools]
         names = [t.name for t in listed.tools]
