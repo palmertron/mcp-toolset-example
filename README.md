@@ -2,7 +2,7 @@
 
 Companion demo for the [Toolset Versioning SEP draft](https://github.com/palmertron/modelcontextprotocol/blob/sep/toolset-versioning/seps/0000-toolset-versioning.md) and the Python SDK **draft reference** on branch [`feature/toolset-versioning`](https://github.com/palmertron/python-sdk/tree/feature/toolset-versioning).
 
-A Streamable HTTP MCP server publishes three immutable `core-ops` Toolset versions. The demo targets MCP protocol revision `2026-07-28`: clients discover server support through `server/discover`, advertise `io.modelcontextprotocol/toolsets` in per-request capabilities, and pass an exact `toolset` pin on `tools/list` / `tools/call`. A CLI agent pins `core-ops@1.1.0` and drives tools through a local OpenAI-compatible LLM (Ollama by default).
+A Streamable HTTP MCP server publishes three agent-facing `core-ops` Toolset versions plus a separate `pagination-demo` family for exercising `toolsets/list` paging. The demo targets MCP protocol revision `2026-07-28`: clients discover server support through `server/discover`, advertise `io.modelcontextprotocol/toolsets` in per-request capabilities, and pass an exact `toolset` pin on `tools/list` / `tools/call`. A CLI agent pins `core-ops@1.1.0` and drives tools through a local OpenAI-compatible LLM (Ollama by default).
 
 ## Layout
 
@@ -10,6 +10,7 @@ A Streamable HTTP MCP server publishes three immutable `core-ops` Toolset versio
 server/server.py   # MCPServer + Toolsets over Streamable HTTP
 client/verify.py   # No-LLM pin assertions
 client/agent.py    # CLI agent (Ollama / OpenAI-compatible)
+tests/test_server.py # In-memory server integration tests
 ```
 
 ## Prerequisites
@@ -46,6 +47,15 @@ uv run python -m client.verify
 
 Asserts unpinned vs pinned membership, that `ToolD` under `1.1.0` returns `tool_not_in_toolset`, and that an unknown pin returns `unknown_toolset` on `tools/call`.
 
+**In-memory server tests**
+
+```bash
+uv run --frozen pytest
+```
+
+The tests traverse the separate `pagination-demo` Toolset family across pages.
+They do not change or exercise the Toolset pinned by the CLI agent.
+
 **Terminal 2 — agent**
 
 ```bash
@@ -61,6 +71,10 @@ Then try: `get me a content list`. The agent should call `ToolA`, `ToolB`, and `
 | `core-ops@1.0.0` | ToolA, ToolB |
 | `core-ops@1.1.0` (agent pin) | ToolA, ToolB, ToolC |
 | `core-ops@2.0.0` | ToolB, ToolC, ToolD |
+
+The server also publishes four experimental `pagination-demo` versions containing
+ToolA. With the demo's page size of three, that family spans two `toolsets/list`
+pages without changing the agent-facing `core-ops` surface.
 
 Unpinned `tools/list` still returns ToolA–ToolD.
 
@@ -86,3 +100,4 @@ This demo shows the extension wire behavior that SEP reviewers may be interested
 3. Exact pin on `tools/list` / `tools/call`
 4. Protocol errors for non-members (`tool_not_in_toolset`) and unknown pins (`unknown_toolset`)
 5. Concurrent immutable versions (`1.0.0` / `1.1.0` / `2.0.0`) on one server
+6. Opaque cursor traversal over filtered `toolsets/list` results

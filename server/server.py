@@ -1,6 +1,6 @@
-"""Streamable HTTP MCP server demonstrating Toolset Versioning pins.
+"""Streamable HTTP MCP server demonstrating Toolset Versioning.
 
-Publishes three immutable `core-ops` Toolset versions over tools ToolA–ToolD.
+Publishes three agent-facing `core-ops` versions and a separate pagination fixture.
 Clients pin via `tools/list` / `tools/call` (`toolset: {name, version}`).
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 from mcp.server.mcpserver import MCPServer
 from mcp.server.toolsets import Toolsets
 
-toolsets = Toolsets()
+toolsets = Toolsets(page_size=3)
 mcp = MCPServer("toolset-demo", extensions=[toolsets])
 
 
@@ -61,6 +61,16 @@ toolsets.add_toolset(
     description="Major surface change (B, C, D; A removed).",
     tools=["ToolB", "ToolC", "ToolD"],
 )
+
+for minor in range(4):
+    toolsets.add_toolset(
+        name="pagination-demo",
+        version=f"1.{minor}.0",
+        status="experimental",
+        title="Pagination Demo",
+        description="Pagination-only publication exercised by server tests.",
+        tools=["ToolA"],
+    )
 
 
 def main() -> None:
